@@ -44,6 +44,7 @@ const signin = async (payload: { email: string; password: string }) => {
   const token = jwt.sign(
     {
       id: user.id,
+      name:user.name,
       role: user.role,
       email: user.email,
     },
