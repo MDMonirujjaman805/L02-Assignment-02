@@ -13,8 +13,6 @@ const createVehicle = async (req: Request, res: Response) => {
   });
 };
 
-
-
 const getAllVehicles = async (req: Request, res: Response) => {
   try {
     const vehicles = await vehicleService.getAllVehicles();
@@ -41,8 +39,6 @@ const getAllVehicles = async (req: Request, res: Response) => {
   }
 };
 
-
-
 // {
 //     "success": true,
 //     "message": "Vehicle created successfully",
@@ -55,7 +51,6 @@ const getAllVehicles = async (req: Request, res: Response) => {
 //         "availability_status": "available"
 //     }
 // }
-
 
 const getVehicleById = async (req: Request, res: Response) => {
   try {
@@ -85,20 +80,25 @@ const getVehicleById = async (req: Request, res: Response) => {
   }
 };
 
-
-
 // Update Vehicle
- const updateVehicle = async (req: Request, res: Response) => {
+const updateVehicle = async (req: Request, res: Response) => {
   try {
     const vehicleId = Number(req.params.vehicleId);
     if (isNaN(vehicleId)) {
-      return res.status(400).json({ success: false, message: "Invalid vehicle ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid vehicle ID" });
     }
 
-    const updatedVehicle = await vehicleService.updateVehicle(vehicleId, req.body);
+    const updatedVehicle = await vehicleService.updateVehicle(
+      vehicleId,
+      req.body
+    );
 
     if (!updatedVehicle) {
-      return res.status(404).json({ success: false, message: "Vehicle not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Vehicle not found" });
     }
 
     res.status(200).json({
@@ -113,17 +113,21 @@ const getVehicleById = async (req: Request, res: Response) => {
 };
 
 // Delete Vehicle
- const deleteVehicle = async (req: Request, res: Response) => {
+const deleteVehicle = async (req: Request, res: Response) => {
   try {
     const vehicleId = Number(req.params.vehicleId);
     if (isNaN(vehicleId)) {
-      return res.status(400).json({ success: false, message: "Invalid vehicle ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid vehicle ID" });
     }
 
     const deletedVehicle = await vehicleService.deleteVehicle(vehicleId);
 
     if (!deletedVehicle) {
-      return res.status(404).json({ success: false, message: "Vehicle not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Vehicle not found" });
     }
 
     res.status(200).json({
@@ -136,12 +140,10 @@ const getVehicleById = async (req: Request, res: Response) => {
   }
 };
 
-
-
 export const vehiclesController = {
   createVehicle,
   getAllVehicles,
   getVehicleById,
   updateVehicle,
-  deleteVehicle
+  deleteVehicle,
 };

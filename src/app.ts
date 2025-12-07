@@ -1,8 +1,9 @@
 import express, { Request, Response } from "express";
 import { initDB } from "./config/db.js";
-import { usersRoutes } from "./modules/users/users.routes.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { vehiclesRoutes } from "./modules/vehicles/vehicles.routes.js";
+import { usersRoutes } from "./modules/users/users.routes.js";
+import { bookingRoutes } from "./modules/bookings/booking.routes.js";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/vehicles", vehiclesRoutes);
 app.use("/api/v1/users", usersRoutes);
-// app.use("/api/v1/bookings");
+app.use("/api/v1/bookings", bookingRoutes);
 
 // Global 404 handler
 app.use((req, res) => {
