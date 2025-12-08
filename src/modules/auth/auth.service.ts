@@ -10,37 +10,28 @@ const signup = async (payload: Record<string, unknown>) => {
     `INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
     [name, email, hashedPassword, phone, role]
   );
-
   return result;
 };
 
 const signin = async (payload: { email: string; password: string }) => {
   const { email, password } = payload;
-
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
-
   const userQuery = `
     SELECT id, name, email, phone, role, password 
     FROM users 
     WHERE email = $1
   `;
   const result = await pool.query(userQuery, [email]);
-
   if (result.rows.length === 0) {
     throw new Error("User not found");
   }
-
   const user = result.rows[0];
-
-  // Validate password
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
-
-  // Generate JWT token
   const token = jwt.sign(
     {
       id: user.id,
@@ -51,7 +42,6 @@ const signin = async (payload: { email: string; password: string }) => {
     config.jwt_secret!,
     { expiresIn: "7d" }
   );
-
   const safeUser = {
     id: user.id,
     name: user.name,
@@ -59,7 +49,6 @@ const signin = async (payload: { email: string; password: string }) => {
     phone: user.phone,
     role: user.role,
   };
-
   return { token, user: safeUser };
 };
 

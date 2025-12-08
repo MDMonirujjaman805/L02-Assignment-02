@@ -1,60 +1,69 @@
 import { pool } from "../../config/db.js";
 
-// fields allowed to update from request body
 const ALLOWED_UPDATES = ["name", "email", "phone", "role"];
 const getAllUsers = async () => {
-  const res = await pool.query(
-    `SELECT id, name, email, phone, role FROM users ORDER BY id ASC`
+  const result = await pool.query(
+    "SELECT id, name, email, phone, role FROM users ORDER BY id ASC"
   );
-  return res.rows;
+  return result.rows;
+};
+
+const getUserById = async (userId: number) => {
+  const result = await pool.query(
+    "SELECT id, name, email, phone, role FROM users WHERE id = $1",
+    [userId]
+  );
+  return result.rows[0];
 };
 
 const updateUser = async (userId: number, payload: Record<string, any>) => {
-  // Build dynamic SET clause but only for allowed fields
-  const keys = Object.keys(payload).filter((k) => ALLOWED_UPDATES.includes(k));
+  const keys = Object.keys(payload).filter((key) =>
+    ALLOWED_UPDATES.includes(key)
+  );
   if (keys.length === 0) {
-    // nothing to update
-    const existing = await pool.query(
-      `SELECT id, name, email, phone, role FROM users WHERE id=$1`,
-      [userId]
-    );
-    return existing.rows[0] ?? null;
+    return getUserById(userId);
   }
-  const setClauses: string[] = [];
-  const values: any[] = [];
-  let idx = 1;
-  for (const key of keys) {
-    setClauses.push(`${key} = $${idx}`);
-    values.push(payload[key]);
-    idx++;
-  }
-  values.push(userId); // last param for WHERE
-  const query = `UPDATE users SET ${setClauses.join(
-    ", "
-  )} WHERE id = $${idx} RETURNING id, name, email, phone, role`;
-  const res = await pool.query(query, values);
-  return res.rows[0] ?? null;
+
+  const setClauses = keys.map((key, index) => `${key} = $${index + 1}`);
+  const values = keys.map((key) => payload[key]);
+  values.push(userId);
+
+  const query = `
+    UPDATE users
+    SET ${setClauses.join(", ")}
+    WHERE id = $${keys.length + 1}
+    RETURNING id, name, email, phone, role
+  `;
+
+  const result = await pool.query(query, values);
+  return result.rows[0];
 };
 
 const userHasActiveBookings = async (userId: number) => {
-  const res = await pool.query(
-    `SELECT 1 FROM bookings WHERE customer_id = $1 AND status = 'active' LIMIT 1`,
+  const result = await pool.query(
+    "SELECT 1 FROM bookings WHERE customer_id=$1 AND status='active' LIMIT 1",
     [userId]
   );
-  return res.rows.length > 0;
+  return result.rows.length > 0;
 };
 
 const deleteUser = async (userId: number) => {
-  // check active bookings constraint
   if (await userHasActiveBookings(userId)) {
     throw new Error("User has active bookings and cannot be deleted");
   }
-  const res = await pool.query(`DELETE FROM users WHERE id=$1 RETURNING id`, [
-    userId,
-  ]);
-  if (res.rows.length === 0) {
+  const result = await pool.query(
+    "DELETE FROM users WHERE id=$1 RETURNING id",
+    [userId]
+  );
+  if (!result.rows.length) {
     throw new Error("User not found");
   }
-  return;
+  return result.rows[0];
 };
-export const userServices = { getAllUsers, updateUser, deleteUser };
+
+export const userServices = {
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+};

@@ -8,9 +8,6 @@ const createVehicle = async (payload: Record<string, unknown>) => {
     daily_rent_price,
     availability_status,
   } = payload;
-
-  //   const hashPassword = await bcrypt.hash(password as string, 12);
-
   const result = await pool.query(
     `INSERT INTO vehicles (vehicle_name,type,registration_number,daily_rent_price,availability_status) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
     [
@@ -21,7 +18,6 @@ const createVehicle = async (payload: Record<string, unknown>) => {
       availability_status,
     ]
   );
-
   return result.rows[0];
 };
 
@@ -37,7 +33,6 @@ const getVehicleById = async (vehicleId: number) => {
   return result.rows[0];
 };
 
-// Update vehicle by ID
 const updateVehicle = async (vehicleId: number, payload: any) => {
   const {
     vehicle_name,
@@ -61,17 +56,15 @@ const updateVehicle = async (vehicleId: number, payload: any) => {
       vehicleId,
     ]
   );
-
   return result.rows[0];
 };
 
-// Delete vehicle by ID
 const deleteVehicle = async (vehicleId: number) => {
   const result = await pool.query(
     "DELETE FROM vehicles WHERE id=$1 RETURNING *",
     [vehicleId]
   );
-  return result.rows[0]; // null if not found
+  return result.rows[0];
 };
 
 export const vehicleService = {
